@@ -19,11 +19,11 @@ router.post('/addTweet', auth, async (req, res) => {
 router.get('/tweets/:id', auth, async (req, res) => {
     const _id = req.params.id
     try {
-        const task = await Tweet.findOne({ _id, owner: req.user._id })
-        if(!task){
+        const tweet = await Tweet.findOne({ _id, owner: req.user._id })
+        if(!tweet){
             return res.status(404).send()
         }
-        res.send(task)
+        res.send(tweet)
     } catch (e) {
         res.status(500).send()
     }
