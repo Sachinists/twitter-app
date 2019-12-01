@@ -21,14 +21,15 @@ router.post('/users/follow', auth, async(req, res) => {
 
 router.get('/me/followings', auth, async(req, res) => {
     try {
-        await req.user.populate({
-            path: 'followings',
-            options: {
-                limit: parseInt(req.query.limit),
-                skip: parseInt(req.query.skip)
-            }
-        }).execPopulate()
-        res.send(req.user.followings)
+        // await req.user.populate({
+        //     path: 'followings',
+        //     options: {
+        //         limit: parseInt(req.query.limit),
+        //         skip: parseInt(req.query.skip)
+        //     }
+        // }).execPopulate()
+        const followings = await Followers.find({ owner: req.user._id })
+        res.send(followings)
     } catch (e) {
         res.status(500).send()
     }
@@ -36,8 +37,9 @@ router.get('/me/followings', auth, async(req, res) => {
 
 router.get('/me/feeds', auth, async(req, res) => {
     try {
-        await req.user.populate('followings').execPopulate()
-        const array = req.user.followings.map(element => element.otherPersonID);
+        // await req.user.populate('followings').execPopulate()
+        const followings = await Followers.find({ owner: req.user._id })
+        const array = followings.map(element => element.otherPersonID);
         const tweets = await Tweet.find({
             owner: { $in: array }
         }, null, {
