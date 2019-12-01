@@ -14,12 +14,24 @@ const tweetSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'User'
-    }
+    },
+    ownerName: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 7,
+        lowercase: true
+    },
+    hasTags: [{
+        type: String,
+        trim: true,
+        lowercase: true
+    }]
 }, {
     timestamps: true
 })
 
-tweetSchema.methods.toJSON = function () {
+tweetSchema.methods.toJSON = function() {
     const tweet = this
 
     const tweetObject = tweet.toObject()

@@ -4,13 +4,18 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const Tweet = require('../models/tweet')
 
-const userSchema =  new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
         trim: true,
+        minlength: 7,
         unique: true,
         lowercase: true
+    },
+    name: {
+        type: String,
+        trim: true
     },
     email: {
         type: String,
@@ -18,8 +23,8 @@ const userSchema =  new mongoose.Schema({
         trim: true,
         lowercase: true,
         unique: true,
-        validate(value){
-            if(!validator.isEmail(value)){
+        validate(value) {
+            if (!validator.isEmail(value)) {
                 throw new Error('Email is invalid')
             }
         }
@@ -29,20 +34,25 @@ const userSchema =  new mongoose.Schema({
         required: true,
         minlength: 7,
         trim: true,
-        validate(value){
-            if(value.toLowerCase().includes('password')){
+        validate(value) {
+            if (value.toLowerCase().includes('password')) {
                 throw new Error('Password cannot contain "password"')
             }
         }
     },
     tokens: [{
-        token:  {
+        token: {
             type: String,
             required: true
         }
     }],
     avatar: {
         type: Buffer
+    },
+    avatarSet: {
+        type: Boolean,
+        required: true,
+        default: false
     }
 }, {
     timestamps: true
@@ -60,17 +70,17 @@ userSchema.virtual('followings', {
     foreignField: 'owner'
 })
 
-userSchema.methods.generateAuthToken = async function () {
+userSchema.methods.generateAuthToken = async function() {
     const user = this
-    const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET )
+    const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET)
     user.tokens = user.tokens.concat({ token })
     await user.save()
     return token
 }
 
-userSchema.methods.toJSON =  function () {
+userSchema.methods.toJSON = function() {
     const user = this
-    
+
     const userObject = user.toObject()
     delete userObject.tokens
     delete userObject.password
@@ -79,30 +89,29 @@ userSchema.methods.toJSON =  function () {
     return userObject
 }
 
-userSchema.statics.findByCredentials = async (email, password) => {    
-    const user = await User.findOne({ email })
-    if(!user){
+userSchema.statics.findByCredentials = async(username, password) => {
+    const user = await User.findOne({ username })
+    if (!user) {
         throw new Error('Unable to login')
     }
-    
+
     const isMatch = await bcrypt.compare(password, user.password)
-    if(!isMatch){
-        console.log('something went wrong')
+    if (!isMatch) {
         throw new Error('Unable to login')
     }
 
     return user
 }
 
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function(next) {
     const user = this
-    if(user.isModified('password')){
+    if (user.isModified('password')) {
         user.password = await bcrypt.hash(user.password, 8)
     }
     next()
 })
 
-userSchema.pre('remove', async function (next) {
+userSchema.pre('remove', async function(next) {
     const user = this
     await Tweet.deleteMany({ owner: user._id })
     next()

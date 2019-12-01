@@ -26,7 +26,8 @@ followersSchema.index({ owner: 1, otherPersonID: 1 }, { name: 'unique_index_name
 const Followers = mongoose.model('Followers', followersSchema)
 
 Followers.on('index', function(error) {
-    if(error) throw new Error(error.message)
-  });
+    console.log('in index follow')
+    if (error) throw new Error(error.message)
+});
 
 module.exports = Followers
