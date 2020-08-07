@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "env-cmd ./config/dev.env nodemon src/server.js"
+    "dev": "env-cmd ./config/dev.env nodemon src/server.js",
+    "test": "mocha -r ts-node/register ./tests/**/*.ts --exit",
+    "test:coverage": "rimraf .nyc_output && nyc npm run test"
   },
   "author": "",
   "license": "ISC",
@@ -23,6 +25,15 @@
   },
   "devDependencies": {
     "env-cmd": "^8.0.2",
-    "nodemon": "^2.0.1"
+    "husky": "^4.2.5",
+    "mocha": "^8.1.1",
+    "nodemon": "^2.0.1",
+    "nyc": "^15.1.0",
+    "rimraf": "^3.0.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run test"
+    }
   }
 }
